@@ -19,7 +19,7 @@ body { margin: 0; background: #f5efdf; color: #252750; font-family: var(--font-l
 .direction-button:hover, .direction-button:focus-visible { background: #252750; color: #f5efdf; }
 .direction-button:focus-visible, .swap-button:focus-visible, .text-pane:focus-visible { outline: 3px solid #e85a4f; outline-offset: 3px; }
 .direction-button.is-active { background: #252750; color: #f5efdf; }
-.swap-button { border: 0; background: #e85a4f; color: #f5efdf; min-width: 54px; height: 34px; border-radius: 999px; padding: 0 10px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 600; }
+.swap-button { border: 0; background: #b33f38; color: #f5efdf; min-width: 54px; height: 34px; border-radius: 999px; padding: 0 10px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 600; }
 .swap-button:hover { background: #252750; }
 .direction-label { color: #716f83; }
 .translation-workbench { display: grid; grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr); align-items: stretch; gap: 0; margin-top: 26px; }

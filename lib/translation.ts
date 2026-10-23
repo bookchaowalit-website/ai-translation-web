@@ -12,14 +12,28 @@ export function dictionaryFor(direction: Direction): Record<string, string> {
   return direction === "en-th" ? EN_TO_TH : TH_TO_EN;
 }
 
-/** Replace each whitespace-separated word found in the dictionary; unknown words and spacing stay unchanged. */
+// Leading punctuation, the word itself (letters, Thai marks, digits), trailing punctuation.
+const WORD = new RegExp("^([^\\p{L}\\p{M}\\p{N}]*)(.*?)([^\\p{L}\\p{M}\\p{N}]*)$", "su");
+
+/** Own dictionary entries only, so words like "constructor" never resolve to Object.prototype members. */
+function lookup(dictionary: Record<string, string>, word: string): string | undefined {
+  if (Object.hasOwn(dictionary, word.toLowerCase())) return dictionary[word.toLowerCase()];
+  if (Object.hasOwn(dictionary, word)) return dictionary[word];
+  return undefined;
+}
+
+/**
+ * Replace each whitespace-separated word found in the dictionary, keeping punctuation around it.
+ * Unknown words and the original spacing stay unchanged.
+ */
 export function translate(text: string, direction: Direction): string {
   const dictionary = dictionaryFor(direction);
   return text
     .split(/(\s+)/)
     .map((token) => {
-      if (/^\s+$/.test(token)) return token;
-      return dictionary[token.toLowerCase()] || dictionary[token] || token;
+      const [, before, word, after] = WORD.exec(token) ?? ["", "", token, ""];
+      const translated = word ? lookup(dictionary, word) : undefined;
+      return translated === undefined ? token : `${before}${translated}${after}`;
     })
     .join("");
 }

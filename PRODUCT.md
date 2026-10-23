@@ -17,7 +17,8 @@ A portfolio visitor who wants to see a small bilingual UI with facing source and
 
 1. Pick EN → TH or TH → EN (each loads a sample phrase), or type your own text.
 2. Each whitespace-separated word in the dictionary is replaced (case-insensitive for English, punctuation kept);
-   unknown words and spacing stay unchanged.
+   unknown words and spacing stay unchanged. Input is capped at 5000 characters (textarea limit; the MCP route
+   rejects longer text).
 3. Swap flips the direction and moves the current translation into the source pane.
 4. `/api/mcp` answers JSON-RPC with `translate` and `get_dictionary` over the same dictionary.
 5. Front-end and server errors go to Sentry (errors only, personal data stripped) when `NEXT_PUBLIC_SENTRY_DSN` is set.

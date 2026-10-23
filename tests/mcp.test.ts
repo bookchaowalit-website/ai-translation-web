@@ -35,6 +35,13 @@ describe("MCP route", () => {
     expect(body.id).toBe(4);
   });
 
+  it("rejects text over the 5000-character cap with invalid params", async () => {
+    const res = await rpc({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "translate", arguments: { text: "a".repeat(5001) } } });
+    const body = await res.json();
+    expect(body.error.code).toBe(-32602);
+    expect(body.id).toBe(9);
+  });
+
   it("rejects an unknown tool instead of pretending to call it", async () => {
     const res = await rpc({ jsonrpc: "2.0", id: 5, method: "tools/call", params: { name: "get_data" } });
     expect((await res.json()).error.code).toBe(-32602);

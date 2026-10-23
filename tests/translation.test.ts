@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EN_TO_TH, SAMPLE_INPUT, TH_TO_EN, dictionaryFor, otherDirection, translate } from "@/lib/translation";
+import { EN_TO_TH, MAX_TEXT_LENGTH, SAMPLE_INPUT, TH_TO_EN, dictionaryFor, otherDirection, stripPunctuation, translate } from "@/lib/translation";
 
 describe("translate", () => {
   it("maps every known English word to Thai, ignoring case", () => {
@@ -37,5 +37,30 @@ describe("dictionary", () => {
   it("otherDirection flips the direction", () => {
     expect(otherDirection("en-th")).toBe("th-en");
     expect(otherDirection("th-en")).toBe("en-th");
+  });
+});
+
+describe("input limits", () => {
+  it("splits a 50k-punctuation token plus one letter in linear time (no ReDoS)", () => {
+    const cases: [string, string[]][] = [
+      [`${"!".repeat(50_000)}a`, ["!".repeat(50_000), "a", ""]],
+      // the worst case for the old single backtracking regex: a word, a long punctuation run, a word (~1.4 s)
+      [`a${"!".repeat(50_000)}a`, ["", `a${"!".repeat(50_000)}a`, ""]],
+    ];
+    for (const [token, expected] of cases) {
+      const start = performance.now();
+      expect(stripPunctuation(token)).toEqual(expected);
+      expect(performance.now() - start).toBeLessThan(50);
+    }
+  });
+
+  it("splits punctuation around a word, including Thai marks", () => {
+    expect(stripPunctuation("(สวัสดี!)")).toEqual(["(", "สวัสดี", "!)"]);
+    expect(stripPunctuation("...")).toEqual(["...", "", ""]);
+  });
+
+  it("translates at most MAX_TEXT_LENGTH characters", () => {
+    expect(MAX_TEXT_LENGTH).toBe(5000);
+    expect(translate("a".repeat(MAX_TEXT_LENGTH + 10), "en-th")).toHaveLength(MAX_TEXT_LENGTH);
   });
 });

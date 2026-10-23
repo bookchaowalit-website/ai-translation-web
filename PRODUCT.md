@@ -1,46 +1,43 @@
-# bookchaowalit-translation-frontend — Product brief
+# Translation — Product truth
 
-**Slug:** `bookchaowalit-website/bookchaowalit-translation-frontend`  
-**Generated:** 2026-08-11 (bulk Book Dev closeout)  
-**Status:** starter / portfolio boundary
+> Inferred from the code and copy (no user interview). Checked against the portfolio card claims review
+> (`portfolio-site-web/docs/audits/CARD-CLAIMS-REVIEW-2026-10.md`, row `translation`, evidence Live→Prototype) on
+> 2026-10-23.
 
-## Purpose
+## What it is
 
-Portfolio repository under Book Dev. This brief records ownership and the
-current honest status so the nested tree is not an empty shell in the task
-system.
+A client-only demo of an English/Thai "language desk" over an 8-word hard-coded dictionary (hello, world, portfolio,
+developer, project, thank, you, today).
 
-## Runnable path
+## Who it is for
 
-See `README.md` for install and run instructions when present.
+A portfolio visitor who wants to see a small bilingual UI with facing source and target panes.
 
-## Limits
+## What works today
 
-- Not claimed as production-ready unless README and tests prove it.
-- Mobile smoke / emulator acceptance is separate and toolchain-dependent.
+1. Pick EN → TH or TH → EN (each loads a sample phrase), or type your own text.
+2. Each whitespace-separated word in the dictionary is replaced (case-insensitive for English, punctuation kept);
+   unknown words and spacing stay unchanged.
+3. Swap flips the direction and moves the current translation into the source pane.
+4. `/api/mcp` answers JSON-RPC with `translate` and `get_dictionary` over the same dictionary.
+5. Front-end and server errors go to Sentry (errors only, personal data stripped) when `NEXT_PUBLIC_SENTRY_DSN` is set.
 
-## Source README excerpt
+## What does not work (and must not be claimed)
 
-```
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- No translation API, machine translation, batch processing or translation memory (claims removed from the portfolio
+  card in the 2026-10 review). Grammar and word order are not handled.
+- No storage, account or sync; nothing survives a reload. No product analytics beyond Vercel Analytics.
 
-## Getting Started
+## Live URL and deploy state
 
-First, run the development server:
+- Live: https://translation.bookchaowalit.com (HTTP 200 on 2026-10-23).
+- The Vercel project `bookchaowalit-translation-frontend` is deployed only by CLI (last production 2026-10-23 12:01
+  +07, the CVE patch, commit 7c4902c) and its Git link names the old repository
+  (`bookchaowalit/bookchaowalit-translation-frontend`), so a push to `main` does not deploy. The live site lags
+  `main` (no Sentry, old template MCP route, no punctuation handling) until the owner reconnects Vercel Git to this
+  repository (owner action D9). `NEXT_PUBLIC_SENTRY_DSN` is already set on the Vercel project (Sentry project
+  `ai-translation-web`, org `personal-yu0`).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Boundaries
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize an
-```
+- Browser-only apart from the stateless `/api/mcp` route.

@@ -58,3 +58,17 @@ export function translate(text: string, direction: Direction): string {
 export function otherDirection(direction: Direction): Direction {
   return direction === "en-th" ? "th-en" : "en-th";
 }
+
+/**
+ * Words in `text` that the dictionary does not know (first-seen order, no duplicates), so the page can say which
+ * words were left unchanged instead of passing them through silently.
+ */
+export function unknownWords(text: string, direction: Direction): string[] {
+  const dictionary = dictionaryFor(direction);
+  const seen = new Set<string>();
+  for (const token of text.slice(0, MAX_TEXT_LENGTH).split(/\s+/)) {
+    const word = stripPunctuation(token)[1];
+    if (word && lookup(dictionary, word) === undefined) seen.add(word);
+  }
+  return [...seen];
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EN_TO_TH, MAX_TEXT_LENGTH, SAMPLE_INPUT, TH_TO_EN, dictionaryFor, otherDirection, stripPunctuation, translate } from "@/lib/translation";
+import { EN_TO_TH, MAX_TEXT_LENGTH, SAMPLE_INPUT, TH_TO_EN, dictionaryFor, otherDirection, stripPunctuation, translate, unknownWords } from "@/lib/translation";
 
 describe("translate", () => {
   it("maps every known English word to Thai, ignoring case", () => {
@@ -62,5 +62,13 @@ describe("input limits", () => {
   it("translates at most MAX_TEXT_LENGTH characters", () => {
     expect(MAX_TEXT_LENGTH).toBe(5000);
     expect(translate("a".repeat(MAX_TEXT_LENGTH + 10), "en-th")).toHaveLength(MAX_TEXT_LENGTH);
+  });
+});
+
+describe("unknownWords", () => {
+  it("lists words the dictionary leaves unchanged, once each, ignoring punctuation and known words", () => {
+    expect(unknownWords("Hello, brave new world! brave", "en-th")).toEqual(["brave", "new"]);
+    expect(unknownWords("สวัสดี แมว", "th-en")).toEqual(["แมว"]);
+    expect(unknownWords("   ", "en-th")).toEqual([]);
   });
 });

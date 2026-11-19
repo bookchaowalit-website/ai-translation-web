@@ -27,7 +27,7 @@ A portfolio visitor who wants to see a small bilingual UI with facing source and
 
 - No translation API, machine translation, batch processing or translation memory (claims removed from the portfolio
   card in the 2026-10 review). Grammar and word order are not handled.
-- No storage, account or sync; nothing survives a reload. No product analytics beyond Vercel Analytics.
+- No storage, account or sync; nothing survives a reload. No product analytics.
 
 ## Live URL and deploy state
 

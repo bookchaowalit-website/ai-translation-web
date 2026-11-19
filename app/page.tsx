@@ -1,14 +1,88 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EN_TO_TH, MAX_TEXT_LENGTH, SAMPLE_INPUT, otherDirection, translate, type Direction } from "@/lib/translation";
+import { AppFoot, AppTop, Pill } from "@/components/app-shell";
+import { MAX_TEXT_LENGTH, SAMPLE_INPUT, dictionaryFor, otherDirection, translate, unknownWords, type Direction } from "@/lib/translation";
+
+const SOURCE = "https://github.com/bookchaowalit-website/ai-translation-web";
+const LABEL: Record<Direction, { from: string; to: string; lang: string; toLang: string }> = {
+  "en-th": { from: "English", to: "Thai (ไทย)", lang: "en", toLang: "th" },
+  "th-en": { from: "Thai (ไทย)", to: "English", lang: "th", toLang: "en" },
+};
 
 export default function Home() {
   const [direction, setDirection] = useState<Direction>("en-th");
   const [input, setInput] = useState(SAMPLE_INPUT["en-th"]);
   const output = useMemo(() => translate(input, direction), [direction, input]);
-  const swap = () => { setDirection(otherDirection); setInput(output); };
-  const sourceLabel = direction === "en-th" ? "English / source" : "ไทย / source";
-  const targetLabel = direction === "en-th" ? "ไทย / translation" : "English / translation";
-  return <div className="language-desk"><main className="language-shell"><nav className="language-nav"><span className="language-mark">LANGUAGE DESK / EN · TH</span><span>Dictionary demo · local only</span></nav><header className="language-hero"><div><div className="desk-note">Two languages / one small vocabulary</div><h1>Make the meaning cross the table.</h1></div><p className="hero-aside"><strong>{Object.keys(EN_TO_TH).length}</strong> mapped words<br />dictionary lookup, not production NMT</p></header><section className="language-rail" aria-label="Translation direction"><span className="direction-label">Direction</span><button type="button" className={`direction-button ${direction === "en-th" ? "is-active" : ""}`} onClick={() => { setDirection("en-th"); setInput(SAMPLE_INPUT["en-th"]); }}>EN → TH</button><button type="button" className={`direction-button ${direction === "th-en" ? "is-active" : ""}`} onClick={() => { setDirection("th-en"); setInput(SAMPLE_INPUT["th-en"]); }}>TH → EN</button><button className="swap-button" type="button" onClick={swap} aria-label="Swap translation direction">Swap</button></section><section className="translation-workbench" aria-label="Translation workbench"><div className="text-pane-wrap"><label className="pane-label" htmlFor="source-text"><span>{sourceLabel}</span><span className="char-count">{input.length} chars</span></label><textarea id="source-text" className="text-pane" maxLength={MAX_TEXT_LENGTH} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Write a phrase" /></div><div className="workbench-arrow" aria-hidden="true">TO</div><div className="text-pane-wrap"><label className="pane-label" htmlFor="translation-text"><span>{targetLabel}</span><span className="char-count">{output.length} chars</span></label><textarea id="translation-text" className="text-pane output" readOnly value={output} aria-label="Translation result" /></div></section><footer className="translation-footer"><span>Unknown words stay unchanged so the demo never pretends to know more than its dictionary.</span><span>State is not saved.</span></footer></main></div>;
+  const unknown = useMemo(() => unknownWords(input, direction), [direction, input]);
+  const vocabulary = Object.entries(dictionaryFor(direction));
+  const label = LABEL[direction];
+
+  const pick = (next: Direction) => {
+    setDirection(next);
+    setInput(SAMPLE_INPUT[next]);
+  };
+  const swap = () => {
+    setDirection(otherDirection);
+    setInput(output);
+  };
+  const addWord = (word: string) => setInput((current) => (current.trim() ? `${current.trimEnd()} ${word}` : word));
+
+  return (
+    <div className="as">
+      <a className="as-skip" href="#source-text">Skip to the text</a>
+      <AppTop name="Translation" tagline="English ↔ Thai dictionary demo" />
+
+      <main className="as-page">
+        <div className="as-intro">
+          <p className="as-eyebrow">Two languages, one small vocabulary</p>
+          <h1>Make the meaning cross the table.</h1>
+          <p>Type a phrase and each word the dictionary knows is swapped. It is a lookup of {vocabulary.length} words, not machine translation.</p>
+          <Pill tone="grey">Dictionary lookup · no AI model, no API</Pill>
+        </div>
+
+        <div className="tr-rail">
+          <div className="as-segmented-wrap">
+            <span id="direction-label">Direction</span>
+            <div className="as-segmented" role="group" aria-labelledby="direction-label">
+              <button type="button" aria-pressed={direction === "en-th"} onClick={() => pick("en-th")}>EN → TH</button>
+              <button type="button" aria-pressed={direction === "th-en"} onClick={() => pick("th-en")}>TH → EN</button>
+            </div>
+          </div>
+          <button type="button" className="as-plain" onClick={swap}>Swap direction and text</button>
+        </div>
+
+        <div className="tr-panes">
+          <section className="as-composer tr-card" aria-label="Source">
+            <label className="as-field" htmlFor="source-text">
+              <span className="tr-label"><span>{label.from}</span><span className="tr-meta">{input.length} / {MAX_TEXT_LENGTH} characters</span></span>
+              <textarea id="source-text" lang={label.lang} maxLength={MAX_TEXT_LENGTH} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Write a phrase" />
+            </label>
+            {unknown.length ? (
+              <p className="tr-unknown" role="status">Not in the dictionary, left unchanged: {unknown.map((word, i) => <span key={word}>{i ? ", " : ""}<b lang={label.lang}>{word}</b></span>)}</p>
+            ) : null}
+          </section>
+
+          <section className="as-composer tr-card" aria-label="Translation">
+            <label className="as-field" htmlFor="translation-text">
+              <span className="tr-label"><span>{label.to}</span><span className="tr-meta">{output.length} characters</span></span>
+              <textarea id="translation-text" lang={label.toLang} readOnly value={output} placeholder="The translation appears here" />
+            </label>
+          </section>
+        </div>
+
+        <section className="tr-vocab" aria-labelledby="vocab-heading">
+          <h2 id="vocab-heading">Words it knows (tap to add)</h2>
+          <ul>
+            {vocabulary.map(([from, to]) => (
+              <li key={from}><button type="button" onClick={() => addWord(from)} aria-label={`Add ${from}`}><span lang={label.lang}>{from}</span><span aria-hidden="true">→</span><span lang={label.toLang}>{to}</span></button></li>
+            ))}
+          </ul>
+        </section>
+
+        <p className="as-note">Unknown words stay unchanged so the demo never pretends to know more than its dictionary. Nothing is saved or sent anywhere.</p>
+      </main>
+      <AppFoot source={SOURCE} />
+    </div>
+  );
 }

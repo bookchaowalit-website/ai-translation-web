@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { AppFoot, AppTop, Pill } from "@/components/app-shell";
 import { MAX_TEXT_LENGTH, SAMPLE_INPUT, dictionaryFor, otherDirection, translate, unknownWords, type Direction } from "@/lib/translation";
 
+// Long pastes can hold hundreds of unknown words; show a few so the translation stays near on phones.
+const UNKNOWN_PREVIEW = 8;
 const SOURCE = "https://github.com/bookchaowalit-website/ai-translation-web";
 const LABEL: Record<Direction, { from: string; to: string; lang: string; toLang: string }> = {
   "en-th": { from: "English", to: "Thai (ไทย)", lang: "en", toLang: "th" },
@@ -26,7 +28,18 @@ export default function Home() {
     setDirection(otherDirection);
     setInput(output);
   };
-  const addWord = (word: string) => setInput((current) => (current.trim() ? `${current.trimEnd()} ${word}` : word));
+  const [chipNotice, setChipNotice] = useState("");
+  const addWord = (word: string) => {
+    const next = !input.trim() ? word : /\s$/.test(input) ? `${input}${word}` : `${input} ${word}`;
+    if (next.length > MAX_TEXT_LENGTH) {
+      setChipNotice(`No room to add “${word}”: the text is at the ${MAX_TEXT_LENGTH} character limit.`);
+      return;
+    }
+    setChipNotice("");
+    setInput(next);
+  };
+  const shown = unknown.slice(0, UNKNOWN_PREVIEW);
+  const hidden = unknown.length - shown.length;
 
   return (
     <div className="as">
@@ -56,10 +69,22 @@ export default function Home() {
           <section className="as-composer tr-card" aria-label="Source">
             <label className="as-field" htmlFor="source-text">
               <span className="tr-label"><span>{label.from}</span><span className="tr-meta">{input.length} / {MAX_TEXT_LENGTH} characters</span></span>
-              <textarea id="source-text" lang={label.lang} maxLength={MAX_TEXT_LENGTH} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Write a phrase" />
+              <textarea id="source-text" lang={label.lang} maxLength={MAX_TEXT_LENGTH} value={input} onChange={(event) => { setChipNotice(""); setInput(event.target.value); }} placeholder="Write a phrase" />
             </label>
-            {unknown.length ? (
-              <p className="tr-unknown" role="status">Not in the dictionary, left unchanged: {unknown.map((word, i) => <span key={word}>{i ? ", " : ""}<b lang={label.lang}>{word}</b></span>)}</p>
+            {/* The live region stays in the DOM so the first unknown word is announced too. */}
+            <div role="status">
+              {unknown.length ? (
+                <p className="tr-unknown">
+                  Not in the dictionary, left unchanged: {shown.map((word, i) => <span key={word}>{i ? ", " : ""}<b lang={label.lang}>{word.length > 40 ? `${word.slice(0, 40)}…` : word}</b></span>)}
+                  {hidden ? ` and ${hidden} more` : null}
+                </p>
+              ) : null}
+            </div>
+            {hidden ? (
+              <details className="tr-unknown-all">
+                <summary>Show all {unknown.length} unknown words</summary>
+                <p lang={label.lang}>{unknown.join(", ")}</p>
+              </details>
             ) : null}
           </section>
 
@@ -73,11 +98,12 @@ export default function Home() {
 
         <section className="tr-vocab" aria-labelledby="vocab-heading">
           <h2 id="vocab-heading">Words it knows (tap to add)</h2>
-          <ul>
+          <ul role="list">
             {vocabulary.map(([from, to]) => (
-              <li key={from}><button type="button" onClick={() => addWord(from)} aria-label={`Add ${from}`}><span lang={label.lang}>{from}</span><span aria-hidden="true">→</span><span lang={label.toLang}>{to}</span></button></li>
+              <li key={from}><button type="button" onClick={() => addWord(from)}><span className="sr-only">Add </span><span lang={label.lang}>{from}</span><span aria-hidden="true">→</span><span className="sr-only">, meaning </span><span lang={label.toLang}>{to}</span></button></li>
             ))}
           </ul>
+          <p className="tr-chip-notice" role="status">{chipNotice}</p>
         </section>
 
         <p className="as-note">Unknown words stay unchanged so the demo never pretends to know more than its dictionary. Nothing is saved or sent anywhere.</p>

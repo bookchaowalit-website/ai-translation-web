@@ -18,7 +18,8 @@ html, body { margin: 0; background: var(--as-bg); }
 .tr-unknown { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--as-amber-bg); color: var(--as-fg); font-size: 15px; line-height: 1.55; overflow-wrap: anywhere; }
 .tr-unknown b { color: var(--as-amber); }
 .tr-unknown-all { margin-top: 16px; font-size: 15px; }
-.tr-unknown-all summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--as-accent); }
+/* list-item keeps the native open/closed marker (display: flex hides it); 44px tall via line-height. */
+.tr-unknown-all summary { display: list-item; min-height: 44px; line-height: 44px; cursor: pointer; color: var(--as-accent); }
 .tr-unknown-all p { margin: 0; overflow-wrap: anywhere; line-height: 1.55; }
 .tr-chip-notice { margin: 0; color: var(--as-fg); font-size: 15px; }
 /* Empty live regions stay in the DOM (so the first message is announced) but must not add a grid gap. */

@@ -136,4 +136,11 @@ describe("translation desk", () => {
     expect(target().value).toBe("hello portfolio developer");
     expect(host.textContent).toContain("Thai (ไทย)");
   });
+
+  it("keeps the native open/closed marker on the full-list summary", async () => {
+    const { readFileSync } = await import("node:fs");
+    const rule = /\.tr-unknown-all summary \{([^}]*)\}/.exec(readFileSync("app/globals.css", "utf8"))![1];
+    expect(rule).toContain("display: list-item");
+    expect(rule).not.toMatch(/display: (flex|grid|block)/);
+  });
 });

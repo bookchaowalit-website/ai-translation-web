@@ -46,3 +46,4 @@ A portfolio visitor who wants to see a small bilingual UI with facing source and
 ## Known limits
 
 - At 375x667 the intro, direction row, Swap and the source card push the translation card below the first screen even with the sample text (DESIGN.md says both panes fit); pre-existing layout, left for a later App-shell layout pass (Codex review 2026-11-20, ai-translation-web-b9a6ef8c52.md).
+- The unknown-words live region updates on every keystroke, so a screen reader may announce the list repeatedly while typing (not debounced) (Codex review 2026-11-20, ai-translation-web-dd76516640.md).

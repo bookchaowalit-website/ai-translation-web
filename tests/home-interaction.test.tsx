@@ -59,12 +59,12 @@ describe("translation desk", () => {
     const words = Array.from({ length: 30 }, (_, i) => `zz${i}`);
     type(source(), words.join(" "));
     const preview = $(".tr-unknown")!.textContent!;
-    expect(preview).toContain("zz7");
-    expect(preview).not.toContain("zz8");
-    expect(preview).toContain("and 22 more");
+    expect(preview).toContain("zz4");
+    expect(preview).not.toContain("zz5");
+    expect(preview).toContain("and 25 more");
     const all = $<HTMLDetailsElement>(".tr-unknown-all")!;
     expect(all.open).toBe(false);
-    expect(all.textContent).toContain("Show all 30 unknown words");
+    expect(all.textContent).toContain("Show all 30 unknown words in full");
     expect(all.textContent).toContain("zz29");
   });
 
@@ -82,7 +82,35 @@ describe("translation desk", () => {
 
   it("shortens a very long unknown word in the preview", () => {
     type(source(), "b".repeat(300));
-    expect($(".tr-unknown b")!.textContent).toBe(`${"b".repeat(40)}…`);
+    expect($(".tr-unknown b")!.textContent).toBe(`${"b".repeat(24)}…`);
+    // A cut word can be read in full even with fewer unknown words than the preview holds.
+    expect($(".tr-unknown-all")!.textContent).toContain("b".repeat(300));
+  });
+
+  it("opens the full unknown-word list after the translation, not between the panes", () => {
+    type(source(), Array.from({ length: 30 }, (_, i) => `zz${i}`).join(" "));
+    const all = $(".tr-unknown-all")!;
+    expect(all.closest(".tr-panes")).toBeNull();
+    expect($("#translation-text")!.compareDocumentPosition(all) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("clears the chip notice when direction or swap replaces the text", () => {
+    type(source(), "a".repeat(4996));
+    press(chip("today"));
+    expect($(".tr-chip-notice")!.textContent).not.toBe("");
+    press(button("TH → EN"));
+    expect($(".tr-chip-notice")!.textContent).toBe("");
+    press(button("EN → TH"));
+    type(source(), "a".repeat(4996));
+    press(chip("today"));
+    press(button("Swap direction"));
+    expect($(".tr-chip-notice")!.textContent).toBe("");
+  });
+
+  it("keeps whitespace-only source text when a chip is added", () => {
+    type(source(), "\n\n");
+    press(chip("today"));
+    expect(source().value).toBe("\n\ntoday");
   });
 
   it("keeps a trailing line break when a chip is added", () => {

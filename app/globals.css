@@ -17,7 +17,7 @@ html, body { margin: 0; background: var(--as-bg); }
 .tr-meta { color: var(--as-muted); font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; }
 .tr-unknown { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--as-amber-bg); color: var(--as-fg); font-size: 15px; line-height: 1.55; overflow-wrap: anywhere; }
 .tr-unknown b { color: var(--as-amber); }
-.tr-unknown-all { font-size: 15px; }
+.tr-unknown-all { margin-top: 16px; font-size: 15px; }
 .tr-unknown-all summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--as-accent); }
 .tr-unknown-all p { margin: 0; overflow-wrap: anywhere; line-height: 1.55; }
 .tr-chip-notice { margin: 0; color: var(--as-fg); font-size: 15px; }

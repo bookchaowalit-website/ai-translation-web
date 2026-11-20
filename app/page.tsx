@@ -4,8 +4,11 @@ import { useMemo, useState } from "react";
 import { AppFoot, AppTop, Pill } from "@/components/app-shell";
 import { MAX_TEXT_LENGTH, SAMPLE_INPUT, dictionaryFor, otherDirection, translate, unknownWords, type Direction } from "@/lib/translation";
 
-// Long pastes can hold hundreds of unknown words; show a few so the translation stays near on phones.
-const UNKNOWN_PREVIEW = 8;
+// Long pastes can hold hundreds of unknown words; show a few, cut short, so the translation stays near on phones.
+// The full list opens below both panes, never between the source and the translation.
+const UNKNOWN_PREVIEW = 5;
+const UNKNOWN_CUT = 24;
+const cut = (word: string) => (word.length > UNKNOWN_CUT ? `${word.slice(0, UNKNOWN_CUT)}…` : word);
 const SOURCE = "https://github.com/bookchaowalit-website/ai-translation-web";
 const LABEL: Record<Direction, { from: string; to: string; lang: string; toLang: string }> = {
   "en-th": { from: "English", to: "Thai (ไทย)", lang: "en", toLang: "th" },
@@ -20,17 +23,19 @@ export default function Home() {
   const vocabulary = Object.entries(dictionaryFor(direction));
   const label = LABEL[direction];
 
+  const [chipNotice, setChipNotice] = useState("");
   const pick = (next: Direction) => {
+    setChipNotice("");
     setDirection(next);
     setInput(SAMPLE_INPUT[next]);
   };
   const swap = () => {
+    setChipNotice("");
     setDirection(otherDirection);
     setInput(output);
   };
-  const [chipNotice, setChipNotice] = useState("");
   const addWord = (word: string) => {
-    const next = !input.trim() ? word : /\s$/.test(input) ? `${input}${word}` : `${input} ${word}`;
+    const next = input === "" ? word : /\s$/.test(input) ? `${input}${word}` : `${input} ${word}`;
     if (next.length > MAX_TEXT_LENGTH) {
       setChipNotice(`No room to add “${word}”: the text is at the ${MAX_TEXT_LENGTH} character limit.`);
       return;
@@ -40,6 +45,7 @@ export default function Home() {
   };
   const shown = unknown.slice(0, UNKNOWN_PREVIEW);
   const hidden = unknown.length - shown.length;
+  const showAll = hidden > 0 || shown.some((word) => word.length > UNKNOWN_CUT);
 
   return (
     <div className="as">
@@ -75,17 +81,11 @@ export default function Home() {
             <div role="status">
               {unknown.length ? (
                 <p className="tr-unknown">
-                  Not in the dictionary, left unchanged: {shown.map((word, i) => <span key={word}>{i ? ", " : ""}<b lang={label.lang}>{word.length > 40 ? `${word.slice(0, 40)}…` : word}</b></span>)}
-                  {hidden ? ` and ${hidden} more` : null}
+                  Not in the dictionary, left unchanged: {shown.map((word, i) => <span key={word}>{i ? ", " : ""}<b lang={label.lang}>{cut(word)}</b></span>)}
+                  {hidden ? ` and ${hidden} more` : null}{showAll ? " (full list below the translation)" : null}
                 </p>
               ) : null}
             </div>
-            {hidden ? (
-              <details className="tr-unknown-all">
-                <summary>Show all {unknown.length} unknown words</summary>
-                <p lang={label.lang}>{unknown.join(", ")}</p>
-              </details>
-            ) : null}
           </section>
 
           <section className="as-composer tr-card" aria-label="Translation">
@@ -95,6 +95,13 @@ export default function Home() {
             </label>
           </section>
         </div>
+
+        {showAll ? (
+          <details className="tr-unknown-all" id="unknown-all">
+            <summary>Show all {unknown.length} unknown {unknown.length === 1 ? "word" : "words"} in full</summary>
+            <p lang={label.lang}>{unknown.join(", ")}</p>
+          </details>
+        ) : null}
 
         <section className="tr-vocab" aria-labelledby="vocab-heading">
           <h2 id="vocab-heading">Words it knows (tap to add)</h2>
